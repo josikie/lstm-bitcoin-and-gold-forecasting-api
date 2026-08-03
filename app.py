@@ -1,0 +1,99 @@
+## Import Library
+# numpy untuk manipulasi struktur data 
+# tensorflow memuat dan menjalankan model LSTM
+# joblib untuk memuat skaler 
+# yfinance untuk download data terkini emas dan bitcoin
+# flask untuk membuat server flask
+# request membaca data dari pengguna
+# jsonify untuk mengubah data menjadi format JSON
+
+import numpy as np
+import tensorflow as tf
+import joblib
+import yfinance as yf
+import requests
+from flask import Flask, request, jsonify
+from keras.models import load_model
+print("Library Berhasil di import")
+
+# inisiasi server flask api
+app = Flask(__name__)
+
+# muat model dan skaler
+try: 
+    btc_model = load_model("lstm_bitcoin_model.h5", compile=False)
+    gold_model = load_model("lstm_gold_model.h5", compile=False)
+    btc_scaler = joblib.load("btc_scaler.pkl")
+    gold_scaler = joblib.load("gold_scaler.pkl")
+    print("Model dan skaler dimuat")
+except Exception as e:
+    print(f"Gagal memuat file aset: {e}")
+
+# Endpoint ini mengambil parameter url asset (btc atau gold)
+@app.route('/predict', methods=['GET'])
+def predict():
+    try:
+        asset = request.args.get('asset', 'btc').lower()
+        if asset == 'btc':
+            ticker = "BTC-USD"
+            model = btc_model
+            scaler = btc_scaler
+        elif asset == 'gold':
+            ticker = 'GC=F'
+            model = gold_model
+            scaler = gold_scaler
+        else:
+            return jsonify({"status": "error", "message": "Aset tidak valid"}), 400
+        # Membuat sesi penyamaran dengan identitas Google Chrome asli (User-Agent)
+        session = requests.Session()
+        session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        })
+        yfinance_data = yf.download(tickers=ticker, period="45d", interval="1d")
+        if yfinance_data.empty or len(yfinance_data) < 30:
+            return jsonify({"status": "error", "message": "Data gagal dimuat"}), 500
+        # ratain kolom bertingkat yfinance
+        yfinance_data.columns = yfinance_data.columns.get_level_values(0)
+        # ambil 30 hari data untuk memprediksi keesokan hari
+        df_features = yfinance_data[['Close', 'Volume']].tail(30)
+        current_sequence = df_features.values.astype(float).tolist()
+
+        # normalisasi data menggunakan skaler
+        scaled_sequence = scaler.transform(np.array(current_sequence)).tolist()
+        predictions = []
+        time_steps = 30
+
+        # prediksi besok dan 7 hari setelahnya
+        for i in range(7):
+            input_3d = np.array(scaled_sequence[-time_steps:]).reshape(1, time_steps, 2)
+            prediction = model.predict(input_3d, verbose=0)
+            # nilai skalar hasil prediksi
+            pred_scaled = float(prediction.flatten())
+            predictions.append(pred_scaled)
+
+            # nilai volume dari volume hari ke 30 (untuk hari ke 1 sampai ke 7)
+            # diatur karena hari ke 1 - 7 hasil ramalan tidak punya volume
+            volume_scaled = scaled_sequence[-1][1]
+            scaled_sequence.append([pred_scaled, volume_scaled])
+
+        # mengubah angka hasil normalisasi ke harga asli
+        dummy_matrix = np.zeros((7,2))
+        dummy_matrix[:, 0] = predictions
+        real_prediction_prices = scaler.inverse_transform(dummy_matrix)
+        predictions_prices = real_prediction_prices[:,0].tolist()
+
+        # respon api
+        return jsonify({
+            "status": "success",
+            "asset" : "Bitcoin (BTC)" if asset == 'btc' else "Emas (Gold)",
+            "ticker": ticker,
+            "tomorow_prediction": round(predictions_prices[0], 2),
+            "seven_days_projection": [round(price, 2) for price in predictions_prices]
+        }), 200
+
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)

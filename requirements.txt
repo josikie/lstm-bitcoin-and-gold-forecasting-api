@@ -1,0 +1,8 @@
+Flask
+yfinance
+requests
+numpy<2.0.0
+keras
+tensorflow-cpu
+joblib
+gunicorn
