@@ -14,10 +14,12 @@ import yfinance as yf
 import requests
 from flask import Flask, request, jsonify
 from keras.models import load_model
+from flask_cors import CORS
 print("Library Berhasil di import")
 
 # inisiasi server flask api
 app = Flask(__name__)
+CORS(app)
 
 # muat model dan skaler
 try: 
@@ -95,5 +97,6 @@ def predict():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+# buat server di lokal
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

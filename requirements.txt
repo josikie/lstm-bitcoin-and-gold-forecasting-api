@@ -1,4 +1,5 @@
 Flask
+Flask-CORS
 yfinance
 requests
 numpy<2.0.0
