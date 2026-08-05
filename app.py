@@ -12,9 +12,10 @@ import tensorflow as tf
 import joblib
 import yfinance as yf
 import requests
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from keras.models import load_model
 from flask_cors import CORS
+from datetime import datetime, timedelta
 print("Library Berhasil di import")
 
 # inisiasi server flask api
@@ -30,6 +31,21 @@ try:
     print("Model dan skaler dimuat")
 except Exception as e:
     print(f"Gagal memuat file aset: {e}")
+
+# Endpoint untuk menampilkan dashboard
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# Endpoint untuk menampilkan BTC
+@app.route('/bitcoin')
+def bitcoin():
+    return render_template('bitcoin.html')
+
+# Endpoint untuk menampilkan gold
+@app.route('/gold')
+def gold():
+    return render_template('gold.html')
 
 # Endpoint ini mengambil parameter url asset (btc atau gold)
 @app.route('/predict', methods=['GET'])
@@ -56,8 +72,8 @@ def predict():
             return jsonify({"status": "error", "message": "Data gagal dimuat"}), 500
         # ratain kolom bertingkat yfinance
         yfinance_data.columns = yfinance_data.columns.get_level_values(0)
-        # ambil 30 hari data untuk memprediksi keesokan hari
-        df_features = yfinance_data[['Close', 'Volume']].tail(30)
+        # ambil 30 hari data untuk memprediksi keesokan hari (lock satu harga)
+        df_features = yfinance_data[['Close', 'Volume']].iloc[-31:-1]
         current_sequence = df_features.values.astype(float).tolist()
 
         # normalisasi data menggunakan skaler
@@ -84,19 +100,105 @@ def predict():
         real_prediction_prices = scaler.inverse_transform(dummy_matrix)
         predictions_prices = real_prediction_prices[:,0].tolist()
 
+        # data tanggal
+        base_date = datetime.now()
+        dates_list = [(base_date + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(1, 8)]
+
         # respon api
         return jsonify({
             "status": "success",
             "asset" : "Bitcoin (BTC)" if asset == 'btc' else "Emas (Gold)",
             "ticker": ticker,
             "tomorow_prediction": round(predictions_prices[0], 2),
-            "seven_days_projection": [round(price, 2) for price in predictions_prices]
+            "seven_days_projection": [round(price, 2) for price in predictions_prices],
+            "dates": dates_list
         }), 200
 
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+# Endpoint mengembalikan data bitcoin dan emas 5 tahun terakhir
+@app.route('/five_years_data', methods=['GET'])
+def five_years_data():
+    try:
+        session = requests.Session()
+        session.headers.update({'User-Agent': 'Mozilla/5.0'})
+        
+        # Tarik data 5 tahun kebelakang (5y) dengan interval bulanan (1mo)
+        btc_raw = yf.download("BTC-USD", period="5y", interval="1mo", session=session)
+        gold_raw = yf.download("GC=F", period="5y", interval="1mo", session=session)
+        
+        # Ratakan kolom bertingkat yfinance
+        btc_raw.columns = btc_raw.columns.get_level_values(0)
+        gold_raw.columns = gold_raw.columns.get_level_values(0)
+        
+        # Ambil kolom Close, buang baris kosong, dan ambil indeks tanggalnya
+        btc_dates = btc_raw.index.strftime('%Y-%m').tolist()
+        btc_prices = btc_raw['Close'].dropna().values.astype(float).tolist()
+        
+        gold_dates = gold_raw.index.strftime('%Y-%m').tolist()
+        gold_prices = gold_raw['Close'].dropna().values.astype(float).tolist()
+        
+        return jsonify({
+            "status": "success",
+            "btc": {"labels": btc_dates, "prices": btc_prices},
+            "gold": {"labels": gold_dates, "prices": gold_prices}
+        }), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+# Endpoint untuk memanggil data harga bitcoin hari ini
+@app.route('/btc_today', methods=['GET'])
+def bitcoin_today():
+    try:
+        session = requests.Session()
+        session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        })
+        
+        data_raw = yf.download("BTC-USD", period="5d", interval="1d", session=session)
+        data_raw.columns = data_raw.columns.get_level_values(0)
+        
+        # Mengambil harga btc pada menit terakhir dari yfinance
+        harga_btc = float(data_raw['Close'].iloc[-1])
+        
+        return jsonify({
+            "status": "success",
+            "asset": "Bitcoin (BTC-USD)",
+            "today_price": round(harga_btc, 2)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+# Endpoint untuk memanggil data harga emas hari ini
+@app.route('/gold_today', methods=['GET'])
+def gold_today():
+    try:
+        session = requests.Session()
+        session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        })
+        
+        # Mengunduh data pasar Emas ETF (GLD) 5 hari terakhir
+        data_raw = yf.download("GC=F", period="1d", interval="1m", session=session)
+        data_raw.columns = data_raw.columns.get_level_values(0)
+        
+        # Mengambil harga emas pada menit terakhir dari yfinance
+        harga_gold = float(data_raw['Close'].iloc[-1])
+        
+        return jsonify({
+            "status": "success",
+            "asset": "Gold",
+            "today_price": round(harga_gold, 2)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+    
 # buat server di lokal
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
