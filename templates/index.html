@@ -20,7 +20,7 @@
     <!-- Custom styles for this template-->
     <link href="static/css/sb-admin-2.min.css" rel="stylesheet">
     <!-- Vue js and charts -->
-    <!-- 🟢 Mengarahkan ke file lokal di folder static/js/ -->
+    <!-- Mengarahkan ke file lokal di folder static/js/ -->
     <script src="static/js/vue.global.js"></script>
     <script src="static/js/chart.umd.js"></script>
 </head>
@@ -34,7 +34,7 @@
             <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
                 <!-- Sidebar - Brand -->
-                <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+                <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
                     <div class="sidebar-brand-icon rotate-n-15">
                         <i class="fas fa-chart-line"></i>
                     </div>
@@ -113,7 +113,7 @@
                                                 <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                                     Harga Bitcoin Hari Ini ($)</div>
                                                 <div class="h5 mb-0 font-weight-bold text-gray-800"
-                                                    v-text="formatCurrency(btcPrice)">$40,000</div>
+                                                    v-text="formatCurrency(btcPrice)"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -129,7 +129,7 @@
                                                 <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                                     Harga Emas Hari Ini (per ounce)</div>
                                                 <div class="h5 mb-0 font-weight-bold text-gray-800"
-                                                    v-text="formatCurrency(goldPrice)">$215,000</div>
+                                                    v-text="formatCurrency(goldPrice)"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -228,26 +228,12 @@
         <a class="scroll-to-top rounded" href="#page-top">
             <i class="fas fa-angle-up"></i>
         </a>
-        <!-- Bootstrap core JavaScript-->
-        <script src="static/vendor/jquery/jquery.min.js"></script>
-        <script src="static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-        <!-- Core plugin JavaScript-->
-        <script src="static/vendor/jquery-easing/jquery.easing.min.js"></script>
-
-        <!-- Custom scripts for all pages-->
-        <script src="static/js/sb-admin-2.min.js"></script>
-
-        <!-- Page level plugins -->
-        <script src="static/vendor/chart.js/Chart.min.js"></script>
-
-
     </div>
 
     <!-- Logic vue untuk ambil data dari api -->
     <script>
         // insiasi vue
-        const { createApp, ref, nextTick } = Vue;
+        const { createApp, ref, nextTick, onMounted } = Vue;
         createApp({
             setup() {
 
@@ -297,8 +283,8 @@
                                         label: "Harga Bitcoin (USD)",
                                         data: dataHist.btc.prices,
                                         borderWidth: 2.5,
-                                        borderColow: '#4e73df',
-                                        pointradius: 0,
+                                        borderColor: '#4e73df',
+                                        pointRadius: 0,
                                         fill: false
                                     }]
                                 },
@@ -314,7 +300,8 @@
                                         label: 'Harga Emas (USD)',
                                         data: dataHist.gold.prices,
                                         borderWidth: 2.5,
-                                        borderRadius: 0,
+                                        pointRadius: 0,
+                                        borderColor: '#1cc88a',
                                         fill: false
                                     }]
                                 },
@@ -328,9 +315,7 @@
 
                 };
                 // otomatisasi penarikan data saat web dibuka user 
-                nextTick(() => {
-                    loadData();
-                });
+                onMounted(loadData);
                 return {
                     btcPrice,
                     goldPrice,
@@ -339,6 +324,19 @@
             }
         }).mount('#app');
     </script>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="static/vendor/jquery/jquery.min.js"></script>
+    <script src="static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="static/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="static/js/sb-admin-2.min.js"></script>
+
+    <!-- Page level plugins -->
+    <script src="static/vendor/chart.js/Chart.min.js"></script>
 </body>
 
 </html>
