@@ -11,7 +11,9 @@
     <link href="static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <link href="https://googleapis.com" rel="stylesheet">
     <link href="static/css/sb-admin-2.min.css" rel="stylesheet">
-
+    <!-- vue dan chart -->
+    <script src="static/js/vue.global.js"></script>
+    <script src="static/js/chart.umd.js"></script>
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -28,140 +30,221 @@
 </head>
 
 <body id="page-top">
+    <div id="app">
+        <div id="wrapper">
+            <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+                <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
+                    <div class="sidebar-brand-icon rotate-n-15">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="sidebar-brand-text mx-3">Aset</div>
+                </a>
 
-    <div id="wrapper">
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
-                <div class="sidebar-brand-icon rotate-n-15">
-                    <i class="fas fa-chart-line"></i>
+                <!-- Divider -->
+                <hr class="sidebar-divider my-0">
+
+                <!-- Nav Item - Dashboard -->
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Dashboard</span></a>
+                </li>
+
+                <!-- Divider -->
+                <hr class="sidebar-divider">
+
+                <!-- Nav Item - Bitcoin -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/bitcoin">
+                        <i class="fab fa-fw fa-bitcoin text-white opacity-75 mr-2"></i>
+                        <span>Bitcoin</span></a>
+                </li>
+
+                <!-- Nav Item - Emas -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/gold">
+                        <i class="fas fa-fw fa-coins text-white opacity-75 mr-2"></i>
+                        <span>Emas</span></a>
+                </li>
+
+                <!-- Divider -->
+                <hr class="sidebar-divider d-none d-md-block">
+
+                <!-- Sidebar Toggler (Sidebar) -->
+                <div class="text-center d-none d-md-inline">
+                    <button class="rounded-circle border-0" id="sidebarToggle"></button>
                 </div>
-                <div class="sidebar-brand-text mx-3">Aset</div>
-            </a>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider my-0">
+            </ul>
+            <div id="content-wrapper" class="d-flex flex-column">
+                <div id="content">
+                    <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow-sm">
+                        <!-- Sidebar Toggle -->
+                        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <div class="navbar-brand d-flex align-items-center pl-2 ml-3">
+                            <h1 class="h4 mb-0 text-gray-800 font-weight-bold">Dashboard</h1>
+                        </div>
+                    </nav>
+                    <div class="container-fluid px-4">
+                        <div class="d-sm-flex align-items-center justify-content-between mb-4 mt-4">
+                            <h1 class="h4 mb-0 text-gray-800 font-weight-bold">Prediksi Harga Emas (Model LSTM)</h1>
+                        </div>
 
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
-                <a class="nav-link" href="/">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span></a>
-            </li>
+                        <div class="row justify-content-center">
+                            <div class="col-lg-11">
 
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-
-            <!-- Nav Item - Bitcoin -->
-            <li class="nav-item">
-                <a class="nav-link" href="/bitcoin">
-                    <i class="fab fa-fw fa-bitcoin text-white opacity-75 mr-2"></i>
-                    <span>Bitcoin</span></a>
-            </li>
-
-            <!-- Nav Item - Emas -->
-            <li class="nav-item">
-                <a class="nav-link" href="/gold">
-                    <i class="fas fa-fw fa-coins text-white opacity-75 mr-2"></i>
-                    <span>Emas</span></a>
-            </li>
-
-            <!-- Divider -->
-            <hr class="sidebar-divider d-none d-md-block">
-
-            <!-- Sidebar Toggler (Sidebar) -->
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
-            </div>
-
-        </ul>
-        <div id="content-wrapper" class="d-flex flex-column">
-            <div id="content">
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow-sm">
-                    <!-- Sidebar Toggle -->
-                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars"></i>
-                    </button>
-                    <div class="navbar-brand d-flex align-items-center pl-2 ml-3">
-                        <h1 class="h4 mb-0 text-gray-800 font-weight-bold">Dashboard</h1>
-                    </div>
-                </nav>
-                <div class="container-fluid px-4">
-                    <div class="d-sm-flex align-items-center justify-content-between mb-4 mt-4">
-                        <h1 class="h4 mb-0 text-gray-800 font-weight-bold">Analisis Jaringan Saraf LSTM Emas</h1>
-                    </div>
-
-                    <div class="row justify-content-center">
-                        <div class="col-lg-11">
-
-                            <!-- Prediksi besok -->
-                            <div class="card shadow border-0 mb-4 bg-white" style="border-radius: 16px;">
-                                <div
-                                    class="card-body p-4 text-center text-md-left d-md-flex align-items-center justify-content-between">
-                                    <div class="mb-3 mb-md-0">
-                                        <span
-                                            class="text-xs font-weight-bold text-warning text-uppercase tracking-wider block mb-1">🔮
-                                            Estimasi Harga Esok Hari (Hari ke-1)</span>
-                                        <div class="text-muted small">Tanggal:
-                                            <strong>2026-08-04</strong>
+                                <!-- Prediksi besok -->
+                                <div class="card shadow border-0 mb-4 bg-white" style="border-radius: 16px;">
+                                    <div
+                                        class="card-body p-4 text-center text-md-left d-md-flex align-items-center justify-content-between">
+                                        <div class="mb-3 mb-md-0">
+                                            <span
+                                                class="text-xs font-weight-bold text-warning text-uppercase tracking-wider block mb-1">🔮
+                                                Estimasi Harga Esok Hari (Hari ke-1)</span>
+                                            <div class="text-muted small">Tanggal:
+                                                <strong v-text="forecastDate"></strong>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="hero-price">
+                                                <strong v-text="formatCurrency(tomorrowPrice)"></strong>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div>
-                                        <div class="hero-price">$245.10</div>
-                                    </div>
                                 </div>
-                            </div>
 
-                            <!-- Metrik akurasi hasil emas (rmse dan mape) -->
-                            <div class="row mb-4">
-                                <!-- RMSE -->
-                                <div class="col-md-6 mb-3">
-                                    <div class="card shadow border-0 p-3 bg-white"
-                                        style="border-radius: 12px; border-left: 4px solid #f6c23e !important;">
-                                        <span
-                                            class="text-xs font-weight-bold text-gray-400 text-uppercase tracking-wide block mb-1">Metrik
-                                            Evaluasi RMSE Model</span>
-                                        <div class="h4 font-weight-bold text-gray-800">$222.80</div>
-                                        <small class="text-gray-400 text-xs mt-1">Root Mean Squared Error data testing
-                                            emas</small>
+                                <!-- Metrik akurasi hasil emas (rmse dan mape) -->
+                                <div class="row mb-4">
+                                    <!-- RMSE -->
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card shadow border-0 p-3 bg-white"
+                                            style="border-radius: 12px; border-left: 4px solid #f6c23e !important;">
+                                            <span
+                                                class="text-xs font-weight-bold text-gray-400 text-uppercase tracking-wide block mb-1">Metrik
+                                                Evaluasi RMSE Model</span>
+                                            <div class="h4 font-weight-bold text-gray-800">$222.80</div>
+                                            <small class="text-gray-400 text-xs mt-1">Root Mean Squared Error data
+                                                testing
+                                                emas</small>
+                                        </div>
+                                    </div>
+                                    <!-- MAPE -->
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card shadow border-0 p-3 bg-white"
+                                            style="border-radius: 12px; border-left: 4px solid #1cc88a !important;">
+                                            <span
+                                                class="text-xs font-weight-bold text-gray-400 text-uppercase tracking-wide block mb-1">Metrik
+                                                Evaluasi MAPE Model</span>
+                                            <div class="h4 font-weight-bold text-success">9.40%</div>
+                                            <small class="text-gray-400 text-xs mt-1">Mean Absolute Percentage
+                                                Error</small>
+                                        </div>
                                     </div>
                                 </div>
-                                <!-- MAPE -->
-                                <div class="col-md-6 mb-3">
-                                    <div class="card shadow border-0 p-3 bg-white"
-                                        style="border-radius: 12px; border-left: 4px solid #1cc88a !important;">
-                                        <span
-                                            class="text-xs font-weight-bold text-gray-400 text-uppercase tracking-wide block mb-1">Metrik
-                                            Evaluasi MAPE Model</span>
-                                        <div class="h4 font-weight-bold text-success">9.40%</div>
-                                        <small class="text-gray-400 text-xs mt-1">Mean Absolute Percentage Error</small>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <!-- Grafik tren emas 7 hari kedepan -->
-                            <div class="card shadow border-0 mb-4 bg-white" style="border-radius: 16px;">
-                                <div class="card-header bg-white py-3 border-0">
-                                    <h6 class="m-0 font-weight-bold text-gray-700"><i
-                                            class="fas fa-chart-line mr-2 text-warning"></i>Peramalan Tren Emas Tujuh
-                                        hari ke depan</h6>
-                                </div>
-                                <div class="card-body px-4 pb-4">
-                                    <div class="chart-area" style="position: relative; height:340px;">
-                                        <canvas id="predictionChartGold"></canvas>
+                                <!-- Grafik tren emas 7 hari kedepan -->
+                                <div class="card shadow border-0 mb-4 bg-white" style="border-radius: 16px;">
+                                    <div class="card-header bg-white py-3 border-0">
+                                        <h6 class="m-0 font-weight-bold text-gray-700"><i
+                                                class="fas fa-chart-line mr-2 text-warning"></i>Peramalan Tren Emas
+                                            Tujuh
+                                            hari ke depan</h6>
                                     </div>
-                                    <div class="text-center text-gray-400 text-xs mt-3">
-                                        * Sumbu horizontal otomatis merefleksikan deret penanggalan kalender asli dari
-                                        2026-08-04 hingga 2026-08-10
+                                    <div class="card-body px-4 pb-4">
+                                        <div class="chart-area" style="position: relative; height:340px;">
+                                            <canvas id="predictionChartGold"></canvas>
+                                        </div>
+                                        <div class="text-center text-gray-400 text-xs mt-3">
+                                            * Sumbu horizontal otomatis merefleksikan deret penanggalan kalender asli
+                                            dari
+                                            <span v-text="forecastDate"></span> hingga <span
+                                                v-text="lastForecastDate"></span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        const { createApp, ref, nextTick, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const tomorrowPrice = ref(0);
+                const forecastDate = ref("");
+                const lastForecastDate = ref("");
+                let goldChart = null;
+
+                const formatCurrency = (value) => {
+                    if (!value) return '$0.00';
+                    return '$' + value.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                };
+
+                const executeForecasting = async () => {
+                    try {
+                        const response = await fetch('http://127.0.0.1:5000/predict?asset=gold');
+                        const data = await response.json();
+
+                        if (data.status === "success" || data.seven_days_projection) {
+                            tomorrowPrice.value = data.tomorrow_prediction;
+                            forecastDate.value = data.dates[0];
+                            lastForecastDate.value = data.dates[data.dates.length - 1];
+
+                            await nextTick();
+                            const canvasElement = document.getElementById('predictionChartGold');
+
+                            const ctx = canvasElement.getContext('2d');
+
+                            if (goldChart) goldChart.destroy();
+
+                            goldChart = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: data.dates,
+                                    datasets: [{
+                                        label: 'Tren Harga Harga Emas per ounce dalam 7 hari (USD) ',
+                                        data: data.seven_days_projection,
+                                        borderColor: '#1cc88a',
+                                        backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                                        borderWidth: 3,
+                                        tension: 0.2,
+                                        pointRadius: 4,
+                                        pointBackgroundColor: '#1cc88a',
+                                        fill: true
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { display: false } }
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        print("Error mengambil data dari api: " + e);
+                    }
+                };
+                onMounted(executeForecasting);
+                return {
+                    tomorrowPrice,
+                    forecastDate,
+                    formatCurrency,
+                    lastForecastDate
+                };
+            }
+        }).mount('#app');
+    </script>
     <script src="static/vendor/jquery/jquery.min.js"></script>
     <script src="static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="static/vendor/jquery-easing/jquery.easing.min.js"></script>

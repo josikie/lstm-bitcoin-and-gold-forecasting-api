@@ -109,7 +109,7 @@ def predict():
             "status": "success",
             "asset" : "Bitcoin (BTC)" if asset == 'btc' else "Emas (Gold)",
             "ticker": ticker,
-            "tomorow_prediction": round(predictions_prices[0], 2),
+            "tomorrow_prediction": round(predictions_prices[0], 2),
             "seven_days_projection": [round(price, 2) for price in predictions_prices],
             "dates": dates_list
         }), 200

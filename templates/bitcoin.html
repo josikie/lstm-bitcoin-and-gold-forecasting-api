@@ -36,7 +36,7 @@
             <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
                 <!-- Sidebar - Brand -->
-                <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+                <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
                     <div class="sidebar-brand-icon rotate-n-15">
                         <i class="fas fa-chart-line"></i>
                     </div>
@@ -93,7 +93,7 @@
                     </nav>
                     <div class="container-fluid px-4">
                         <div class="d-sm-flex align-items-center justify-content-between mb-4 mt-4">
-                            <h1 class="h4 mb-0 text-gray-800 font-weight-bold">Analisis Jaringan Saraf LSTM Bitcoin</h1>
+                            <h1 class="h4 mb-0 text-gray-800 font-weight-bold">Prediksi Harga Bitcoin (Model LSTM)</h1>
                         </div>
 
                         <div class="row justify-content-center">
@@ -161,7 +161,8 @@
                                         <div class="text-center text-gray-400 text-xs mt-3">
                                             * Sumbu horizontal otomatis merefleksikan deret penanggalan kalender asli
                                             dari
-                                            2026-08-04 hingga 2026-08-10
+                                            <span v-text="forecastDate"></span> hingga <span
+                                                v-text="lastForecastDate"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -182,6 +183,7 @@
             setup() {
                 const tomorrowPrice = ref(0);
                 const forecastDate = ref("");
+                const lastForecastDate = ref("");
                 let btcChart = null;
 
                 const formatCurrency = (value) => {
@@ -200,6 +202,7 @@
                         if (data.status === "success" || data.seven_days_projection) {
                             tomorrowPrice.value = data.tomorrow_prediction;
                             forecastDate.value = data.dates[0];
+                            lastForecastDate.value = data.dates[data.dates.length - 1];
 
                             await nextTick();
                             const canvasElement = document.getElementById('predictionChartBtc');
@@ -239,7 +242,8 @@
                 return {
                     tomorrowPrice,
                     forecastDate,
-                    formatCurrency
+                    formatCurrency,
+                    lastForecastDate
                 };
             }
         }).mount('#app');
