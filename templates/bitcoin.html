@@ -196,7 +196,7 @@
 
                 const executeForecasting = async () => {
                     try {
-                        const response = await fetch('http://127.0.0.1:5000/predict?asset=btc');
+                        const response = await fetch('http://103.59.94.170/predict?asset=btc');
                         const data = await response.json();
 
                         if (data.status === "success" || data.seven_days_projection) {
