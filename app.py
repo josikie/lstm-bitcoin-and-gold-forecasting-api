@@ -183,12 +183,12 @@ def gold_today():
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         })
         
-        # Mengunduh data pasar Emas ETF (GLD) 5 hari terakhir
-        data_raw = yf.download("GC=F", period="1d", interval="1m", session=session)
+        # Mengunduh data pasar Emas ETF (GLD) 
+        data_raw = yf.download("GC=F", period="3d", interval="1d", session=session)
         data_raw.columns = data_raw.columns.get_level_values(0)
         
         # Mengambil harga emas pada menit terakhir dari yfinance
-        harga_gold = float(data_raw['Close'].iloc[-1])
+        harga_gold = float(data_raw['Close'].dropna().iloc[-1])
         
         return jsonify({
             "status": "success",
