@@ -67,7 +67,7 @@ def predict():
         session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         })
-        yfinance_data = yf.download(tickers=ticker, period="45d", interval="1d")
+        yfinance_data = yf.download(tickers=ticker, period="45d", interval="1d", session=session)
         if yfinance_data.empty or len(yfinance_data) < 30:
             return jsonify({"status": "error", "message": "Data gagal dimuat"}), 500
         # ratain kolom bertingkat yfinance
@@ -77,22 +77,14 @@ def predict():
         current_sequence = df_features.values.astype(float).tolist()
 
         # normalisasi data menggunakan skaler
-        scaled_sequence = scaler.transform(np.array(current_sequence)).tolist()
-        predictions = []
-        time_steps = 30
+        scaled_sequence = scaler.transform(np.array(current_sequence))
 
-        # prediksi besok dan 7 hari setelahnya
-        for i in range(7):
-            input_3d = np.array(scaled_sequence[-time_steps:]).reshape(1, time_steps, 2)
-            prediction = model.predict(input_3d, verbose=0)
-            # nilai skalar hasil prediksi
-            pred_scaled = float(prediction.flatten())
-            predictions.append(pred_scaled)
+        # reshape jadi 3d format 
+        input_3d = scaled_sequence.reshape(1, 30, 2)
 
-            # nilai volume dari volume hari ke 30 (untuk hari ke 1 sampai ke 7)
-            # diatur karena hari ke 1 - 7 hasil ramalan tidak punya volume
-            volume_scaled = scaled_sequence[-1][1]
-            scaled_sequence.append([pred_scaled, volume_scaled])
+        # prediksi
+        prediction = model.predict(input_3d, verbose=0)
+        predictions = prediction.flatten().tolist()
 
         # mengubah angka hasil normalisasi ke harga asli
         dummy_matrix = np.zeros((7,2))
@@ -184,7 +176,7 @@ def gold_today():
         })
         
         # Mengunduh data pasar Emas ETF (GLD) 
-        data_raw = yf.download("GC=F", period="3d", interval="1d", session=session)
+        data_raw = yf.download("GC=F", period="4d", interval="1d", session=session)
         data_raw.columns = data_raw.columns.get_level_values(0)
         
         # Mengambil harga emas pada menit terakhir dari yfinance

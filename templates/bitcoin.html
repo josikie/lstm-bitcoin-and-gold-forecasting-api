@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Analisis Peramalan Bitcoin</title>
+    <title>Peramalan Bitcoin</title>
 
     <!-- Aset Utama SB Admin 2 -->
     <link href="static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -128,7 +128,7 @@
                                             <span
                                                 class="text-xs font-weight-bold text-gray-400 text-uppercase tracking-wide block mb-1">Metrik
                                                 Evaluasi RMSE Model</span>
-                                            <div class="h4 font-weight-bold text-gray-800">$6548.39</div>
+                                            <div class="h4 font-weight-bold text-gray-800">$5560.34</div>
                                             <small class="text-gray-400 text-xs mt-1">Root Mean Squared Error data
                                                 testing Bitcoin</small>
                                         </div>
@@ -140,7 +140,7 @@
                                             <span
                                                 class="text-xs font-weight-bold text-gray-400 text-uppercase tracking-wide block mb-1">Metrik
                                                 Evaluasi MAPE Model</span>
-                                            <div class="h4 font-weight-bold text-success">6.06%</div>
+                                            <div class="h4 font-weight-bold text-success">4.45%</div>
                                             <small class="text-gray-400 text-xs mt-1">Mean Absolute Percentage
                                                 Error</small>
                                         </div>
@@ -151,8 +151,9 @@
                                 <div class="card shadow border-0 mb-4 bg-white" style="border-radius: 16px;">
                                     <div class="card-header bg-white py-3 border-0">
                                         <h6 class="m-0 font-weight-bold text-gray-700"><i
-                                                class="fas fa-chart-line mr-2 text-primary"></i>Tren Proyeksi Berantai
-                                            Rekursif 7 Hari Ke Depan</h6>
+                                                class="fas fa-chart-line mr-2 text-primary"></i>Tren Harga Bitcoin 7
+                                            Hari
+                                            Ke Depan</h6>
                                     </div>
                                     <div class="card-body px-4 pb-4">
                                         <div class="chart-area" style="position: relative; height:340px;">
@@ -196,7 +197,7 @@
 
                 const executeForecasting = async () => {
                     try {
-                        const response = await fetch('http://127.0.0.1:5000/predict?asset=btc');
+                        const response = await fetch('https://103.59.94.170.sslip.io/predict?asset=btc');
                         const data = await response.json();
 
                         if (data.status === "success" || data.seven_days_projection) {

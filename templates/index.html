@@ -154,12 +154,9 @@
                                             (LSTM).
                                             Data untuk training dan testing diambil dari library yfinance dalam rentang
                                             waktu 2020 - 2025.
-                                            Harga yang diramal yaitu harga pada hari pertama dengan prediksi paling
-                                            kuat,
-                                            lalu harga di hari ke dua sampai hari ke tujuh.
-                                            Hasil ramalan hari ke dua dan hari ke tujuh dipakai untuk melihat trend
-                                            harga
-                                            aset dalam tujuh hari ke depan.
+                                            Harga yang diramal yaitu harga pada hari pertama sampai hari ke tujuh.
+                                            Hasil ramalan dapat dimanfaatkan untuk melihat tren harga aset tujuh
+                                            hari ke depan.
                                         </p>
                                     </div>
                                 </div>
@@ -258,15 +255,15 @@
                 const loadData = async () => {
                     try {
                         // btc
-                        const resBTC = await fetch('http://127.0.0.1:5000/btc_today');
+                        const resBTC = await fetch('https://103.59.94.170.sslip.io/btc_today');
                         const dataBTC = await resBTC.json();
                         btcPrice.value = dataBTC.today_price;
                         // gold
-                        const resGold = await fetch('http://127.0.0.1:5000/gold_today');
+                        const resGold = await fetch('https://103.59.94.170.sslip.io/gold_today');
                         const dataGold = await resGold.json();
                         goldPrice.value = dataGold.today_price;
                         // chart 
-                        const resHist = await fetch('http://127.0.0.1:5000/five_years_data');
+                        const resHist = await fetch('https://103.59.94.170.sslip.io/five_years_data');
                         const dataHist = await resHist.json();
                         if (dataHist.status === "success") {
                             await nextTick();
