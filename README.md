@@ -12,14 +12,14 @@ An AI-powered Web Application & API that help users gain insights about Bitcoin 
 ### Website ###
 **Dashboard** 
 ![Deskripsi](demo_screenshots/dashboard.jpg)
-Bitcoin
+**Bitcoin**
 ![Deskripsi](demo_screenshots/bitcoin_page.jpg)
-Gold
+**Gold**
 ![Deskripsi](demo_screenshots/gold_page.jpg)
 ### RESTful API ###
-Bitcoin
+**Bitcoin**
 ![Deskripsi](demo_screenshots/predict_btc.jpg)
-Gold
+**Gold**
 ![Deskripsi](demo_screenshots/predict_gold.jpg)
 
 ## How to run
@@ -49,8 +49,3 @@ Gold
   * **Description:** Shows visualisation for Bitoin predictions.
 * **`GET /gold`**
   * **Description:** Shows visualisation for Gold predictions.
-
-## NOTES
-1) The data used to train the model spans only 5 years, from 2020 to 2025. 
-2) Technical variabel only (Closed price, volume).
-3) Need better 
