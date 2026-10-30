@@ -6,24 +6,37 @@
 # flask untuk membuat server flask
 # request membaca data dari pengguna
 # jsonify untuk mengubah data menjadi format JSON
-
 import numpy as np
 import tensorflow as tf
 import joblib
 import yfinance as yf
-import requests
 from flask import Flask, request, jsonify, render_template
 from keras.models import load_model
 from flask_cors import CORS
 from datetime import datetime, timedelta
+from tensorflow.keras.layers import Dense
+from curl_cffi.requests import Session
+
 print("Library Berhasil di import")
 
 # inisiasi server flask api
 app = Flask(__name__)
 CORS(app)
 
+
+class CustomDense(Dense):
+    def __init__(self, *args, **kwargs):
+        # Buang paksa parameter yang bikin server VPS ngambek
+        kwargs.pop('quantization_config', None)
+        super().__init__(*args, **kwargs)
+
+# Daftarkan kelas kustom ini ke objek loader TensorFlow
+custom_objects = {'Dense': CustomDense}
+
 # muat model dan skaler
 try: 
+    # btc_model = load_model("lstm_bitcoin_model.h5", compile=False, custom_objects=custom_objects)
+    # gold_model = load_model("lstm_gold_model.h5", compile=False, custom_objects=custom_objects)
     btc_model = load_model("lstm_bitcoin_model.h5", compile=False)
     gold_model = load_model("lstm_gold_model.h5", compile=False)
     btc_scaler = joblib.load("btc_scaler.pkl")
@@ -62,12 +75,8 @@ def predict():
             scaler = gold_scaler
         else:
             return jsonify({"status": "error", "message": "Aset tidak valid"}), 400
-        # Membuat sesi penyamaran dengan identitas Google Chrome asli (User-Agent)
-        session = requests.Session()
-        session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        })
-        yfinance_data = yf.download(tickers=ticker, period="45d", interval="1d", session=session)
+        # Gunakan adapter bawaan untuk mencegah timeout jabat tangan SSL
+        yfinance_data = yf.download(tickers=ticker, period="45d", interval="1d")
         if yfinance_data.empty or len(yfinance_data) < 30:
             return jsonify({"status": "error", "message": "Data gagal dimuat"}), 500
         # ratain kolom bertingkat yfinance
@@ -85,12 +94,29 @@ def predict():
         # prediksi
         prediction = model.predict(input_3d, verbose=0)
         predictions = prediction.flatten().tolist()
+        
 
         # mengubah angka hasil normalisasi ke harga asli
         dummy_matrix = np.zeros((7,2))
         dummy_matrix[:, 0] = predictions
         real_prediction_prices = scaler.inverse_transform(dummy_matrix)
         predictions_prices = real_prediction_prices[:,0].tolist()
+
+        if asset == 'gold':
+            # 1. Ambil harga asli emas hari terakhir dari pasar (misal: $4341.00)
+            last_real_price = yfinance_data['Close'].iloc[-1].item()
+            
+            # 2. Hitung selisih harga absolut antara tebakan pertama model dengan harga asli pasar
+            absolute_gap = predictions_prices[0] - last_real_price
+            
+            # 3. Geser seluruh 7 hari prediksi ke bawah sebesar nilai gap tersebut
+            # Trik ini menjamin hari pertama akan PAS di harga pasar saat ini ($4300-an)
+            # DAN 100% mempertahankan lekukan naik-turun serta bentuk asli grafik Anda!
+            adjusted_prices = []
+            for price in predictions_prices:
+                adjusted_prices.append(price - absolute_gap)
+                
+            predictions_prices = [float(p) for p in adjusted_prices]
 
         # data tanggal
         base_date = datetime.now()
@@ -105,8 +131,6 @@ def predict():
             "seven_days_projection": [round(price, 2) for price in predictions_prices],
             "dates": dates_list
         }), 200
-
-
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
@@ -114,14 +138,11 @@ def predict():
 @app.route('/five_years_data', methods=['GET'])
 def five_years_data():
     try:
-        session = requests.Session()
-        session.headers.update({'User-Agent': 'Mozilla/5.0'})
-        
         # Tarik data 5 tahun kebelakang (5y) dengan interval bulanan (1mo)
-        btc_raw = yf.download("BTC-USD", period="5y", interval="1mo", session=session)
-        gold_raw = yf.download("GC=F", period="5y", interval="1mo", session=session)
+        btc_raw =  yf.download("BTC-USD", period="5y", interval="1mo")
+        gold_raw = yf.download("GC=F", period="5y", interval="1mo")
         
-        # Ratakan kolom bertingkat yfinance
+        # # Ratakan kolom bertingkat yfinance
         btc_raw.columns = btc_raw.columns.get_level_values(0)
         gold_raw.columns = gold_raw.columns.get_level_values(0)
         
@@ -145,12 +166,7 @@ def five_years_data():
 @app.route('/btc_today', methods=['GET'])
 def bitcoin_today():
     try:
-        session = requests.Session()
-        session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        })
-        
-        data_raw = yf.download("BTC-USD", period="5d", interval="1d", session=session)
+        data_raw = yf.download("BTC-USD", period="5d", interval="1d")
         data_raw.columns = data_raw.columns.get_level_values(0)
         
         # Mengambil harga btc pada menit terakhir dari yfinance
@@ -169,14 +185,9 @@ def bitcoin_today():
 # Endpoint untuk memanggil data harga emas hari ini
 @app.route('/gold_today', methods=['GET'])
 def gold_today():
-    try:
-        session = requests.Session()
-        session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        })
-        
+    try:        
         # Mengunduh data pasar Emas ETF (GLD) 
-        data_raw = yf.download("GC=F", period="4d", interval="1d", session=session)
+        data_raw = yf.download("GC=F", period="4d", interval="1d")
         data_raw.columns = data_raw.columns.get_level_values(0)
         
         # Mengambil harga emas pada menit terakhir dari yfinance

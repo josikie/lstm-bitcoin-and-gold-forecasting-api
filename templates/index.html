@@ -255,15 +255,15 @@
                 const loadData = async () => {
                     try {
                         // btc
-                        const resBTC = await fetch('https://103.59.94.170.sslip.io/btc_today');
+                        const resBTC = await fetch('http://127.0.0.1:5000/btc_today');
                         const dataBTC = await resBTC.json();
                         btcPrice.value = dataBTC.today_price;
                         // gold
-                        const resGold = await fetch('https://103.59.94.170.sslip.io/gold_today');
+                        const resGold = await fetch('http://127.0.0.1:5000/gold_today');
                         const dataGold = await resGold.json();
                         goldPrice.value = dataGold.today_price;
                         // chart 
-                        const resHist = await fetch('https://103.59.94.170.sslip.io/five_years_data');
+                        const resHist = await fetch('http://127.0.0.1:5000/five_years_data');
                         const dataHist = await resHist.json();
                         if (dataHist.status === "success") {
                             await nextTick();

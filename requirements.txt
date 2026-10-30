@@ -7,3 +7,4 @@ keras
 tensorflow-cpu
 joblib
 gunicorn
+scikit-learn
